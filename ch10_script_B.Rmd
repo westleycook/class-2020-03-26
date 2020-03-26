@@ -1,0 +1,62 @@
+---
+title: 'Chapter 10: Confidence Intervals'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(infer)
+library(gov.1005.data)
+library(broom)
+library(tidyverse)
+
+# A little trick to change the order of the levels of treatment, and make some
+# of the later prompts easier.
+
+train <- train %>% 
+  mutate(treatment = fct_relevel(treatment, levels = c("Control")))
+```
+
+# Scene 8
+
+**Prompt:**  First, calculate three things for both the treated and the controls: the average `att_start`, `att_end` and `att_chg`.  Do those numbers make sense? Presumably, there is a mathematical relationship among them that you can check. (Recall that, for each person, `att_end` minus `att_start` should equal `att_chg`.) Second (in a new code chunk), and just as we did with income, calculate the difference in means between  treated and the controls for only `att_chg`. (You will want to get those values on the same row, so that subtraction can be done.) Does the difference seem "large?" Do the numbers seems sensible?  Provide an hypothesis as to why the average `att_chg` is not zero in both groups.
+
+# Scene 9
+
+**Prompt:** What is the 99% confidence interval for the difference in means between the treated and the controls? Provide a Bayesian and Frequentist definition of that interval. Write them down in your Rmd! Are these results consistent with what Enos finds? Check out the paper and see! Why am I using a 99% confidence interval here? Why not 99.5% or 97%?
+
+
+# Scene 10
+
+**Prompt:** Use the language of the Rubin Causal Model and potential outcomes to describe this experiment. What are the units? What are the treatments? What are the outcomes? What is the *causal effect* we want to measure for each unit? Remind us what the *fundamental problem of causal inference* is. Write all this down in a paragraph you construct together. As always, each student needs their own paragraph. Preceptor still has `.my_cold_call()` . . .
+
+# Scene 11
+
+**Prompt:** You can never look at your data too much. Create a scatter plot which shows our treatment indicator on the x-axis and attitude change on the y-axis. You may want to jitter your points, but probably not in both directions. Check that the plot is consistent with the averages which you calculated in Scene 8.  If you have time, re-calculate the mean for each group and add those means as a separate layer in the plot. Why is it that there was an attitude change among the Controls? What does Enos's model assumes is the potential outcome for `att_end` for commuters for the treatment condition which they were not in? What other assumption might one make?
+
+# Scene 12
+
+**Prompt:** Add a fitted line to the plot. (Hint: `geom_smooth()` is easiest.) Make the line straight. Note that you will have to change how treatment is represented. Right now, it is a factor. To fit a line, you need to create a new variable, `treatment_numeric` which is 1 for Treated and 0 for Control. 
+
+
+# Challenge Questions
+
+Material below is much harder. But, if a student group is charging ahead, they should give these questions a shot.
+
+# Scene 11 
+
+**Prompt:** Use `lm()` to calculate the difference between att_chg of the treated and the controls. (You did read [section 10.4](https://davidkane9.github.io/PPBDS/10-confidence-intervals.html#using-lm-and-tidy-as-a-shortcut) of the *Primer*, right? The `tidy()` function from the **broom** library is very useful.) Note, we are not using the bootstrap here. We are just exploring a different way of doing the same calculation as we did for Prompt 8. Always a good idea to check out the *Primer*! Write down a sentence which interprets the meaning of the estimate for both the `(Intercept)` and the `treatmentTreated`.
+
+# Scene 12
+
+**Prompt:** Calculate the 99% confidence interval for the difference between att_chg of the treated and the controls using a bootstrap approach and `lm()`? (Hint: After `group_by(replicate)`, you will want to use `nest()` to group all the observations from that group and then hand them to `lm()` using map functions and list columns.) Not easy! [Look at](https://davidkane9.github.io/PPBDS/11-regression.html#uncertainty-in-simple-linear-regressions) the *Primer* for an example of how to use `nest()` in this way.
+
+
+# Scene 13
+
+**Prompt:** Calculate the 99% confidence interval using simple `lm()`. In other words, we use the bootstrap to understand why things work. With that intuition, we can take short cuts, like with `lm()` and the various arguments to `tidy()`.
+
+# Scene 14
+
+**Prompt:** We started with a cleaned up version of the data from Enos. Can you replicate that data set? Start from the Dataverse.
+
