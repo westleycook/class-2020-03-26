@@ -21,18 +21,96 @@ train <- train %>%
 
 **Prompt:**  First, calculate three things for both the treated and the controls: the average `att_start`, `att_end` and `att_chg`.  Do those numbers make sense? Presumably, there is a mathematical relationship among them that you can check. (Recall that, for each person, `att_end` minus `att_start` should equal `att_chg`.) Second (in a new code chunk), and just as we did with income, calculate the difference in means between  treated and the controls for only `att_chg`. (You will want to get those values on the same row, so that subtraction can be done.) Does the difference seem "large?" Do the numbers seems sensible?  Provide an hypothesis as to why the average `att_chg` is not zero in both groups.
 
+```{r scene_8, echo=FALSE}
+
+train %>% 
+  group_by(treatment) %>% 
+  summarize(avg_att_start = mean(att_start),
+            avg_att_end = mean(att_end),
+            avg_att_chg = mean(att_chg)) %>% 
+  pivot_wider(names_from = treatment, values_from = c(avg_att_chg, avg_att_start, avg_att_end)) %>% 
+  summarize(diff = avg_att_chg_Treated - avg_att_chg_Control)
+
+```
+
+
 # Scene 9
 
 **Prompt:** What is the 99% confidence interval for the difference in means between the treated and the controls? Provide a Bayesian and Frequentist definition of that interval. Write them down in your Rmd! Are these results consistent with what Enos finds? Check out the paper and see! Why am I using a 99% confidence interval here? Why not 99.5% or 97%?
+
+```{r scene_9, echo = FALSE}
+
+train %>% 
+  rep_sample_n(size = 115, reps = 1000, replace = TRUE) %>% 
+  group_by(replicate, treatment) %>% 
+  summarize(avg_att_chg = mean(att_chg)) %>% 
+  pivot_wider(names_from = treatment, values_from = avg_att_chg) %>% 
+  summarize(diff = Control - Treated) %>% 
+  pull(diff) %>% 
+  quantile(c(.005, .995))
+  
+
+```
+
 
 
 # Scene 10
 
 **Prompt:** Use the language of the Rubin Causal Model and potential outcomes to describe this experiment. What are the units? What are the treatments? What are the outcomes? What is the *causal effect* we want to measure for each unit? Remind us what the *fundamental problem of causal inference* is. Write all this down in a paragraph you construct together. As always, each student needs their own paragraph. Preceptor still has `.my_cold_call()` . . .
 
+
+Units:
+- individual people (participants)
+
+Treatments:
+- exposing people to spanish speakers 
+
+Outcomes:
+- changes in attitude after receiving treatment
+
+Causal effect:
+- whether treatment causes attitude (for each person)
+
+Fundamental problem:
+- can't know how a given individual in the control group would have behaved if they'd received treatment (or how a treated individual would have responded without treatment)
+
+
 # Scene 11
 
 **Prompt:** You can never look at your data too much. Create a scatter plot which shows our treatment indicator on the x-axis and attitude change on the y-axis. You may want to jitter your points, but probably not in both directions. Check that the plot is consistent with the averages which you calculated in Scene 8.  If you have time, re-calculate the mean for each group and add those means as a separate layer in the plot. Why is it that there was an attitude change among the Controls? What does Enos's model assumes is the potential outcome for `att_end` for commuters for the treatment condition which they were not in? What other assumption might one make?
+
+```{r scene_11, echo=FALSE}
+
+mean_control <- train %>% 
+  filter(treatment == "Control") %>% 
+  summarize(avg_att_chg = mean(att_chg)) %>% 
+  pull()
+
+mean_treated <- train %>% 
+  filter(treatment == "Treated") %>% 
+  summarize(avg_att_chg = mean(att_chg)) %>% 
+  pull()
+  
+
+train %>% 
+  ggplot(aes(treatment, att_chg)) +
+  geom_point(position = position_jitter(width = 0.1,
+                                        height = 0)) +
+  geom_hline(yintercept = mean_control,
+             color = "red") +
+  geom_text(label = "Mean of Control Group",
+            color = "red",
+            y = -1,
+            x = 1.5) +
+  geom_hline(yintercept = mean_treated,
+             color = "blue") +
+  geom_text(label = "Mean of Treated Group",
+            color = "blue",
+            x = 1.5,
+            y = 1)
+
+```
+
 
 # Scene 12
 
